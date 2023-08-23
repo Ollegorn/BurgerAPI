@@ -5,6 +5,8 @@ VisualStudioVersion = 17.7.34003.232
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BurgerAPI", "BurgerAPI\BurgerAPI.csproj", "{D8BFAFBE-B921-4E12-A6E3-E5ED7AAF7D7C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Entities", "Entities\Entities.csproj", "{7B67A1FB-1A37-4155-AFA4-6DE5D54AE04B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{D8BFAFBE-B921-4E12-A6E3-E5ED7AAF7D7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8BFAFBE-B921-4E12-A6E3-E5ED7AAF7D7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8BFAFBE-B921-4E12-A6E3-E5ED7AAF7D7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B67A1FB-1A37-4155-AFA4-6DE5D54AE04B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B67A1FB-1A37-4155-AFA4-6DE5D54AE04B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B67A1FB-1A37-4155-AFA4-6DE5D54AE04B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B67A1FB-1A37-4155-AFA4-6DE5D54AE04B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
