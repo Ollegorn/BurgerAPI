@@ -1,5 +1,9 @@
 using Entities;
 using Microsoft.EntityFrameworkCore;
+using Repositories;
+using RepositoryContracts;
+using ServiceContracts.Interfaces;
+using Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +13,9 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<BurgerDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IBurgerRepository, BurgerRepository>();
+builder.Services.AddScoped<IBurgerGetterService, BurgerGetterService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -43,9 +43,8 @@ namespace Entities
                     Id = 3,
                     Name = "Egger",
                     Price = 13,
-                    Ingredients = JsonSerializer.Serialize("Beef,Cheese,Tomato,Egg,Letucce")
+                    Ingredients = "Beef,Cheese,Tomato,Egg,Letucce"
                 });
-
 
         }
     }
