@@ -11,10 +11,12 @@ namespace BurgerAPI.Controllers
     {
         private readonly IBurgerGetterService _getterService;
         private readonly IBurgerAdderService _adderService;
-        public BurgerController(IBurgerGetterService burgerGetterService, IBurgerAdderService adderService)
+        private readonly IBurgerUpdaterService _updaterService;
+        public BurgerController(IBurgerGetterService burgerGetterService, IBurgerAdderService adderService, IBurgerUpdaterService updaterService)
         {
             _getterService = burgerGetterService;
             _adderService = adderService;
+            _updaterService = updaterService;
         }
         /// <summary>
         /// Retrieves all Burgers.
@@ -63,12 +65,30 @@ namespace BurgerAPI.Controllers
             return Ok(burger);
         }
 
+        /// <summary>
+        /// Adds a new Burger.
+        /// </summary>
+        /// <param name="BurgerAddRequestDto">The Details of the Burger.</param>
+        /// <returns>The added Burger.</returns>
         [HttpPost]
-        public async Task<ActionResult<BurgerResponseDto>> AddBurger(BurgerAddRequestDto burgerAddRequestDto)
+        public async Task<ActionResult<BurgerResponseDto>> AddBurger(BurgerAddRequestDto BurgerAddRequestDto)
         {
-            var addedBurger = await _adderService.AddBurger(burgerAddRequestDto);
-
+            //logg
+            var addedBurger = await _adderService.AddBurger(BurgerAddRequestDto);
+            //logg
             return CreatedAtAction(nameof(GetBurgerById), new { id = addedBurger.Id }, addedBurger);
+        }
+
+        /// <summary>
+        /// Updates an existing Burger.
+        /// </summary>
+        /// <param name="burgerUpdateRequestDto">The id of the Burger to be updated and the new details.</param>
+        /// <returns>The updated Burger.</returns>
+        [HttpPut("{id}")]
+        public async Task<ActionResult<BurgerResponseDto>> UpdateBurger(BurgerUpdateRequestDto burgerUpdateRequestDto)
+        {
+            var updateBurger = await _updaterService.UpdateBurger(burgerUpdateRequestDto);
+            return Ok(updateBurger);
         }
     }
 }

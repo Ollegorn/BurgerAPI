@@ -30,5 +30,12 @@ namespace RepositoryContracts
         /// <param name="burger">The <see cref="Burger"/> to add.</param>
         /// <returns>The added <see cref="Burger"/>.</returns>
         Task<Burger> AddBurger(Burger burger);
+
+        /// <summary>
+        /// Updates an existing <see cref="Burger"/>.
+        /// </summary>
+        /// <param name="burger">The new values of each property.</param>
+        /// <returns>The updated <see cref="Burger"/> object.</returns>
+        Task<Burger> UpdateBurger(Burger burger);
     }
 }

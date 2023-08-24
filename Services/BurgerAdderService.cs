@@ -15,12 +15,13 @@ namespace Services
 
         public async Task<BurgerResponseDto> AddBurger(BurgerAddRequestDto BurgerAddRequestDto)
         {
+            //logg
             BurgerAddRequestDto.FixIngredientString(BurgerAddRequestDto);
             var Burger = BurgerAddRequestDto.ToBurger();
-
-            //Burger.BurgerIngredients = JsonSerializer.Serialize<string>(BurgerAddRequestDto.BurgerIngredients); NOT NEEDED
+            //logg
             var addedBurger = await _BurgerRepository.AddBurger(Burger);
             var addedBurgerResponse = addedBurger.ToBurgerResponseDto();
+            //logg
             return addedBurgerResponse;
 
         }

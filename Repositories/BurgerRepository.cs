@@ -44,5 +44,21 @@ namespace Repositories
             }
             return burgers;
         }
+
+        public async Task<Burger> UpdateBurger(Burger burger)
+        {
+            var existing = await _context.Burgers.FindAsync(burger.Id);
+
+            if (existing == null)
+                return burger;
+
+            existing.Id = burger.Id; 
+            existing.Name = burger.Name;
+            existing.Price = burger.Price;
+            existing.Ingredients = burger.Ingredients;
+
+            await _context.SaveChangesAsync();
+            return burger;
+        }
     }
 }

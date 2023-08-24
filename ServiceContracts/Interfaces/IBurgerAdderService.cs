@@ -12,8 +12,8 @@ namespace ServiceContracts.Interfaces
         /// <summary>
         /// Adds a new Burger.
         /// </summary>
-        /// <param name="burgerAddRequestDto">The details for the Burger.</param>
+        /// <param name="BurgerAddRequestDto">The details for the Burger.</param>
         /// <returns>The added Burger</returns>
-        Task<BurgerResponseDto> AddBurger(BurgerAddRequestDto burgerAddRequestDto);
+        Task<BurgerResponseDto> AddBurger(BurgerAddRequestDto BurgerAddRequestDto);
     }
 }

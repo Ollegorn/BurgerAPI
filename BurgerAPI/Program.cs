@@ -17,6 +17,7 @@ builder.Services.AddDbContext<BurgerDbContext>(options =>
 builder.Services.AddScoped<IBurgerRepository, BurgerRepository>();
 builder.Services.AddScoped<IBurgerGetterService, BurgerGetterService>();
 builder.Services.AddScoped<IBurgerAdderService, BurgerAdderService>();
+builder.Services.AddScoped<IBurgerUpdaterService, BurgerUpdaterService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
