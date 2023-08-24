@@ -12,6 +12,12 @@ namespace Repositories
             _context = burgerDbContext;
         }
 
+        public async Task<Burger> AddBurger(Burger burger)
+        {
+            _context.Burgers.Add(burger);
+            await _context.SaveChangesAsync();
+            return burger;
+        }
 
         public async Task<List<Burger>> GetAllBurgers()
         {

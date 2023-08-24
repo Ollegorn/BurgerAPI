@@ -11,7 +11,7 @@ namespace ServiceContracts.BurgerDto
 
 
         /// <summary>
-        /// Converts the <see cref="BurgerResponseDto"/> object to an <see cref="Burger"/> object.
+        /// Converts the <see cref="BurgerResponseDto"/> object to a <see cref="Burger"/> object.
         /// </summary>
         /// <returns>A <see cref="Burger"/> object.</returns>
         public Burger ToBurger()

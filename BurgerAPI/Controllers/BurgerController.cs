@@ -10,12 +10,16 @@ namespace BurgerAPI.Controllers
     public class BurgerController : ControllerBase
     {
         private readonly IBurgerGetterService _getterService;
-        public BurgerController(IBurgerGetterService burgerGetterService)
+        private readonly IBurgerAdderService _adderService;
+        public BurgerController(IBurgerGetterService burgerGetterService, IBurgerAdderService adderService)
         {
             _getterService = burgerGetterService;
-            
+            _adderService = adderService;
         }
-
+        /// <summary>
+        /// Retrieves all Burgers.
+        /// </summary>
+        /// <returns>A list of Burgers.</returns>
         [HttpGet("AllBurgers")]
         public async Task<ActionResult<List<BurgerResponseDto>>> GetAllBurgers()
         {
@@ -25,7 +29,12 @@ namespace BurgerAPI.Controllers
             return Ok(burgers);
         }
 
-        [HttpGet("ByIds")]
+        /// <summary>
+        /// Retrieves any existing Burger if the id is matching the given ids.
+        /// </summary>
+        /// <param name="ids">A list of ids.</param>
+        /// <returns>A list of Burgers.</returns>
+        [HttpGet("BurgersByIds")]
         public async Task<ActionResult<List<BurgerResponseDto>>> GetBurgersByIds([FromQuery] List<int> ids)
         {
             //logg
@@ -34,6 +43,11 @@ namespace BurgerAPI.Controllers
             return Ok(burgers);
         }
 
+        /// <summary>
+        /// Retrieves an existing Burger by id.
+        /// </summary>
+        /// <param name="id">An id of a burger.</param>
+        /// <returns>A burger.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<BurgerResponseDto>> GetBurgerById(int id)
         {
@@ -49,5 +63,12 @@ namespace BurgerAPI.Controllers
             return Ok(burger);
         }
 
+        [HttpPost]
+        public async Task<ActionResult<BurgerResponseDto>> AddBurger(BurgerAddRequestDto burgerAddRequestDto)
+        {
+            var addedBurger = await _adderService.AddBurger(burgerAddRequestDto);
+
+            return CreatedAtAction(nameof(GetBurgerById), new { id = addedBurger.Id }, addedBurger);
+        }
     }
 }
