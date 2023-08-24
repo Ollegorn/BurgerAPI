@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using ServiceContracts.BurgerDto;
 using ServiceContracts.Interfaces;
 
@@ -12,11 +11,13 @@ namespace BurgerAPI.Controllers
         private readonly IBurgerGetterService _getterService;
         private readonly IBurgerAdderService _adderService;
         private readonly IBurgerUpdaterService _updaterService;
-        public BurgerController(IBurgerGetterService burgerGetterService, IBurgerAdderService adderService, IBurgerUpdaterService updaterService)
+        private readonly IBurgerDeleterService _deleterService;
+        public BurgerController(IBurgerGetterService burgerGetterService, IBurgerAdderService adderService, IBurgerUpdaterService updaterService, IBurgerDeleterService deleterService)
         {
             _getterService = burgerGetterService;
             _adderService = adderService;
             _updaterService = updaterService;
+            _deleterService = deleterService;
         }
         /// <summary>
         /// Retrieves all Burgers.
@@ -84,11 +85,36 @@ namespace BurgerAPI.Controllers
         /// </summary>
         /// <param name="burgerUpdateRequestDto">The id of the Burger to be updated and the new details.</param>
         /// <returns>The updated Burger.</returns>
-        [HttpPut("{id}")]
-        public async Task<ActionResult<BurgerResponseDto>> UpdateBurger(BurgerUpdateRequestDto burgerUpdateRequestDto)
+        [HttpPut("id")]
+        public async Task<ActionResult> UpdateBurger(BurgerUpdateRequestDto burgerUpdateRequestDto)
         {
+            //logg
             var updateBurger = await _updaterService.UpdateBurger(burgerUpdateRequestDto);
-            return Ok(updateBurger);
+
+            if (!updateBurger)
+                return NotFound("Burger doesn't exist");
+
+            return Ok("Updated Successfully");
+        }
+
+        /// <summary>
+        /// Deletes a Burger base on the id provided.
+        /// </summary>
+        /// <param name="id">The id of the Burger to be deleted.</param>
+        /// <returns></returns>
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteBurger(int id)
+        {
+            //logg
+            var isDeleted = await _deleterService.DeleteBurgerById(id);
+            
+            if (!isDeleted)
+                //loggg
+                return NotFound("Not found");
+            
+            //logg
+            return Ok("Deleted Successfully");
+        
         }
     }
 }

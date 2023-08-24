@@ -36,6 +36,13 @@ namespace RepositoryContracts
         /// </summary>
         /// <param name="burger">The new values of each property.</param>
         /// <returns>The updated <see cref="Burger"/> object.</returns>
-        Task<Burger> UpdateBurger(Burger burger);
+        Task<bool> UpdateBurger(Burger burger);
+
+        /// <summary>
+        /// Deletes a <see cref="Burger"/> from the database.
+        /// </summary>
+        /// <param name="id">The id of the <see cref="Burger"/> to be deleted.</param>
+        /// <returns>True or false.</returns>
+        Task<bool> DeleteBurger(int id);
     }
 }

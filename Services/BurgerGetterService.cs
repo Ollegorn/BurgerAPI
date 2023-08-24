@@ -25,7 +25,7 @@ namespace Services
         {
             //logg
             var burger = await _repository.GetBurgerById(id);
-            var burgerResponse = burger.ToBurgerResponseDto();
+            var burgerResponse = burger?.ToBurgerResponseDto();
             //logg
             return burgerResponse;
         }

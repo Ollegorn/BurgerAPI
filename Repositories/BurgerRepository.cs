@@ -19,6 +19,17 @@ namespace Repositories
             return burger;
         }
 
+        public async Task<bool> DeleteBurger(int id)
+        {
+            var burger =await  _context.Burgers.FindAsync(id);
+            if (burger == null)
+                return false;
+
+            _context.Burgers.Remove(burger);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<List<Burger>> GetAllBurgers()
         {
             return await _context.Burgers.ToListAsync();
@@ -45,12 +56,12 @@ namespace Repositories
             return burgers;
         }
 
-        public async Task<Burger> UpdateBurger(Burger burger)
+        public async Task<bool> UpdateBurger(Burger burger)
         {
             var existing = await _context.Burgers.FindAsync(burger.Id);
 
             if (existing == null)
-                return burger;
+                return false;
 
             existing.Id = burger.Id; 
             existing.Name = burger.Name;
@@ -58,7 +69,7 @@ namespace Repositories
             existing.Ingredients = burger.Ingredients;
 
             await _context.SaveChangesAsync();
-            return burger;
+            return true;
         }
     }
 }
