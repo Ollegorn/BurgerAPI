@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ServiceContracts.BurgerDto;
 using ServiceContracts.Interfaces;
 
@@ -24,6 +25,7 @@ namespace BurgerAPI.Controllers
         /// </summary>
         /// <returns>A list of Burgers.</returns>
         [HttpGet("AllBurgers")]
+        [Authorize(Roles ="User")]
         public async Task<ActionResult<List<BurgerResponseDto>>> GetAllBurgers()
         {
             //logg

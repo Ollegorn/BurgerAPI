@@ -1,8 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace Entities
 {
-    public class BurgerDbContext : DbContext
+    public class BurgerDbContext : IdentityDbContext
     {
         public BurgerDbContext(DbContextOptions options) : base(options)
         {

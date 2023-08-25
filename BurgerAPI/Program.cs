@@ -1,5 +1,8 @@
 using Entities;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Repositories;
 using RepositoryContracts;
 using ServiceContracts.Interfaces;
@@ -19,6 +22,37 @@ builder.Services.AddScoped<IBurgerGetterService, BurgerGetterService>();
 builder.Services.AddScoped<IBurgerAdderService, BurgerAdderService>();
 builder.Services.AddScoped<IBurgerUpdaterService, BurgerUpdaterService>();
 builder.Services.AddScoped<IBurgerDeleterService, BurgerDeleterService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => {
+    options.SignIn.RequireConfirmedAccount = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireDigit = false;
+}).AddEntityFrameworkStores<BurgerDbContext>().AddDefaultTokenProviders();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateAudience = false,
+        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+        ValidateIssuer = false,
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+        RequireExpirationTime = false, //update when add refresh token
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
+    };
+});
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -34,6 +68,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
