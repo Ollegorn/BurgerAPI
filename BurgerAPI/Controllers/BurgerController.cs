@@ -40,6 +40,7 @@ namespace BurgerAPI.Controllers
         /// <param name="ids">A list of ids.</param>
         /// <returns>A list of Burgers.</returns>
         [HttpGet("BurgersByIds")]
+        [Authorize(Roles = "User")]
         public async Task<ActionResult<List<BurgerResponseDto>>> GetBurgersByIds([FromQuery] List<int> ids)
         {
             //logg
@@ -54,6 +55,7 @@ namespace BurgerAPI.Controllers
         /// <param name="id">An id of a burger.</param>
         /// <returns>A burger.</returns>
         [HttpGet("{id}")]
+        [Authorize(Roles = "User")]
         public async Task<ActionResult<BurgerResponseDto>> GetBurgerById(int id)
         {
             //logg
@@ -74,6 +76,7 @@ namespace BurgerAPI.Controllers
         /// <param name="BurgerAddRequestDto">The Details of the Burger.</param>
         /// <returns>The added Burger.</returns>
         [HttpPost]
+        [Authorize(Roles ="Admin")]
         public async Task<ActionResult<BurgerResponseDto>> AddBurger(BurgerAddRequestDto BurgerAddRequestDto)
         {
             //logg
@@ -88,6 +91,7 @@ namespace BurgerAPI.Controllers
         /// <param name="burgerUpdateRequestDto">The id of the Burger to be updated and the new details.</param>
         /// <returns>The updated Burger.</returns>
         [HttpPut("id")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> UpdateBurger(BurgerUpdateRequestDto burgerUpdateRequestDto)
         {
             //logg
@@ -105,6 +109,7 @@ namespace BurgerAPI.Controllers
         /// <param name="id">The id of the Burger to be deleted.</param>
         /// <returns></returns>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> DeleteBurger(int id)
         {
             //logg
