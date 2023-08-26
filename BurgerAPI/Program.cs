@@ -2,11 +2,13 @@ using Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Repositories;
 using RepositoryContracts;
 using ServiceContracts.Interfaces;
 using Services;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +34,20 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => {
     options.Password.RequireDigit = false;
 }).AddEntityFrameworkStores<BurgerDbContext>().AddDefaultTokenProviders();
 
+var key = Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]);
+
+var tokenValidationParameters = new TokenValidationParameters
+{
+    ValidateAudience = false,
+    ValidAudience = builder.Configuration["JwtSettings:Audience"],
+    ValidateIssuer = false,
+    ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+    RequireExpirationTime = false, //update when add refresh token
+    ValidateLifetime = true,
+    ValidateIssuerSigningKey = true,
+    IssuerSigningKey = new SymmetricSecurityKey(key)
+};
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -39,18 +55,11 @@ builder.Services.AddAuthentication(options =>
     options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
 {
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateAudience = false,
-        ValidAudience = builder.Configuration["JwtSettings:Audience"],
-        ValidateIssuer = false,
-        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-        RequireExpirationTime = false, //update when add refresh token
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
-    };
+    options.TokenValidationParameters = tokenValidationParameters;
 });
+
+
+builder.Services.AddSingleton(tokenValidationParameters);
 
 builder.Services.AddAuthorization();
 

@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using ServiceContracts.AuthorizationDto;
 using ServiceContracts.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -14,13 +16,17 @@ namespace Services
         private readonly IConfiguration _configuration;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        public JwtService(IConfiguration configuration, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
+        private readonly BurgerDbContext _dbContext;
+        private readonly TokenValidationParameters _tokenValidationParameters;
+        public JwtService(IConfiguration configuration, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, BurgerDbContext burgerDbContext, TokenValidationParameters tokenValidationParameters)
         {
             _configuration = configuration;
             _userManager = userManager;
             _roleManager = roleManager;
+            _dbContext = burgerDbContext;
+            _tokenValidationParameters = tokenValidationParameters;
         }
-        public string GenerateJwtToken(IdentityUser user)
+        public async Task<AuthResultDto> GenerateJwtToken(IdentityUser user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
 
@@ -32,7 +38,7 @@ namespace Services
             var tokenDescriptor = new SecurityTokenDescriptor()
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddDays(1), //just for testing, should be 1min
+                Expires = DateTime.UtcNow.Add(TimeSpan.Parse(_configuration.GetSection("JwtSettings:ExpiryTimeframe").Value)),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
                 
             };
@@ -40,8 +46,28 @@ namespace Services
             var token = jwtTokenHandler.CreateToken(tokenDescriptor); //creating token
             var jwtToken = jwtTokenHandler.WriteToken(token); //converting to string
 
-            return jwtToken;
+            var refreshToken = new RefreshToken()
+            {
+                JwtId = token.Id,
+                Token = RandomStringGeneration(22), //generate a refresh token
+                AddedDate = DateTime.UtcNow,
+                ExpiryDate = DateTime.UtcNow.AddMonths(6),
+                IsRevoked = false,
+                IsUsed = false,
+                UserId = user.Id
+
+            };
+            await _dbContext.RefreshTokens.AddAsync(refreshToken);
+            await _dbContext.SaveChangesAsync();
+
+            var result = new AuthResultDto
+            {
+                Token = jwtToken,
+                RefreshToken = refreshToken.Token
+            };
+            return result;
         }
+
 
 
         public async Task<List<Claim>> GetAllValidClaims(IdentityUser user)
@@ -83,6 +109,13 @@ namespace Services
 
 
 
+        }
+
+        private static string RandomStringGeneration(int length)
+        {
+            var random = new Random();
+            var chars = "QWERTYUIOPLKJHGFDSAZXCVBNM1234567890qazxswedcvfrtgbnhyujmkiolp_";
+            return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
         }
     }
 }

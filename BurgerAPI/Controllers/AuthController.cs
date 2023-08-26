@@ -56,7 +56,7 @@ namespace BurgerAPI.Controllers
             var roleAddition = await _userManager.AddToRoleAsync(newUser, "User");
 
             //generate the token
-            var token = _jwtService.GenerateJwtToken(newUser);
+            var token = await _jwtService.GenerateJwtToken(newUser);
 
             return Ok(token);
 

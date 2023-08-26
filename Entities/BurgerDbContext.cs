@@ -10,6 +10,7 @@ namespace Entities
         }
 
         public DbSet<Burger> Burgers { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         //Seed data to Database
         protected override void OnModelCreating(ModelBuilder modelBuilder)
