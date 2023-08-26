@@ -13,12 +13,14 @@ namespace BurgerAPI.Controllers
         private readonly IBurgerAdderService _adderService;
         private readonly IBurgerUpdaterService _updaterService;
         private readonly IBurgerDeleterService _deleterService;
-        public BurgerController(IBurgerGetterService burgerGetterService, IBurgerAdderService adderService, IBurgerUpdaterService updaterService, IBurgerDeleterService deleterService)
+        private readonly IJwtService _jwtService;
+        public BurgerController(IBurgerGetterService burgerGetterService, IBurgerAdderService adderService, IBurgerUpdaterService updaterService, IBurgerDeleterService deleterService, IJwtService jwtService)
         {
             _getterService = burgerGetterService;
             _adderService = adderService;
             _updaterService = updaterService;
             _deleterService = deleterService;
+            _jwtService = jwtService;
         }
         /// <summary>
         /// Retrieves all Burgers.
@@ -41,7 +43,7 @@ namespace BurgerAPI.Controllers
         /// <returns>A list of Burgers.</returns>
         [HttpGet("BurgersByIds")]
         [Authorize(Roles = "User")]
-        public async Task<ActionResult<List<BurgerResponseDto>>> GetBurgersByIds([FromQuery] List<int> ids)
+        public async Task<ActionResult<List<BurgerResponseDto>>> GetBurgersByIds([FromQuery] List<int> ids) 
         {
             //logg
             var burgers = await _getterService.GetBurgersByIds(ids);

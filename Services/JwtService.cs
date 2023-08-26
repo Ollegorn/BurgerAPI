@@ -1,13 +1,15 @@
 ﻿using Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using ServiceContracts.AuthorizationDto;
 using ServiceContracts.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
-
+using System.Text.RegularExpressions;
 
 namespace Services
 {
@@ -26,7 +28,7 @@ namespace Services
             _dbContext = burgerDbContext;
             _tokenValidationParameters = tokenValidationParameters;
         }
-        public async Task<AuthResultDto> GenerateJwtToken(IdentityUser user)
+        public async Task<TokensResponseDto> GenerateJwtToken(IdentityUser user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
 
@@ -49,9 +51,9 @@ namespace Services
             var refreshToken = new RefreshToken()
             {
                 JwtId = token.Id,
-                Token = RandomStringGeneration(22), //generate a refresh token
+                Token = GenerateRefreshToken(), //generate a refresh token
                 AddedDate = DateTime.UtcNow,
-                ExpiryDate = DateTime.UtcNow.AddMonths(6),
+                ExpiryDate = DateTime.UtcNow.AddMonths(1),
                 IsRevoked = false,
                 IsUsed = false,
                 UserId = user.Id
@@ -59,13 +61,10 @@ namespace Services
             };
             await _dbContext.RefreshTokens.AddAsync(refreshToken);
             await _dbContext.SaveChangesAsync();
+            var tokensResponse = new TokensResponseDto { Token = jwtToken, RefreshToken = refreshToken.Token };
+            
 
-            var result = new AuthResultDto
-            {
-                Token = jwtToken,
-                RefreshToken = refreshToken.Token
-            };
-            return result;
+            return tokensResponse;
         }
 
 
@@ -111,11 +110,79 @@ namespace Services
 
         }
 
-        private static string RandomStringGeneration(int length)
+        public async Task<TokensResponseDto> VerifyAndGenerateToken(TokenRequestDto tokenRequest)
         {
-            var random = new Random();
-            var chars = "QWERTYUIOPLKJHGFDSAZXCVBNM1234567890qazxswedcvfrtgbnhyujmkiolp_";
-            return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
+            var jwtTokenHandler = new JwtSecurityTokenHandler();
+            try
+            {
+                _tokenValidationParameters.ValidateLifetime = false; //for testing
+
+                var tokenInVerification = jwtTokenHandler.ValidateToken(tokenRequest.Token, _tokenValidationParameters, out var validatedToken);
+
+                if (validatedToken is JwtSecurityToken jwtSecurityToken)
+                {
+                    var result = jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase);
+                    
+                    if (result == null)
+                        return null;
+                }
+                var utcExpiryDate = long.Parse(tokenInVerification.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Exp).Value);
+
+                var now = DateTime.UtcNow;
+                var expiryDate = UnixTimeStampToDateTime(utcExpiryDate);
+                if (expiryDate > DateTime.Now)
+                    return new TokensResponseDto { Errors = new List<string>() { "Expired token" } };
+
+                var storedToken = await _dbContext.RefreshTokens.FirstOrDefaultAsync(x => x.Token == tokenRequest.RefreshToken);
+
+                if (storedToken == null)
+                    return new TokensResponseDto { Errors = new List<string>() { "Token doesn't exist" } };
+
+                if (storedToken.IsUsed)
+                    return new TokensResponseDto { Errors = new List<string>() { "Refreshed successfully" } };
+
+                if (storedToken.IsRevoked)
+                    return new TokensResponseDto { Errors = new List<string>() { "Token is revoked" } };
+
+                var jti = tokenInVerification.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Jti).Value;
+
+                if (storedToken.JwtId != jti)
+                    return new TokensResponseDto { Errors = new List<string>() { "Wrong id" } };
+
+                if (storedToken.ExpiryDate < DateTime.UtcNow)
+                    return new TokensResponseDto { Errors = new List<string>() { "Expired tokens" } };
+
+
+                storedToken.IsUsed = true;
+                _dbContext.RefreshTokens.Update(storedToken);
+                await _dbContext.SaveChangesAsync();
+
+                var dbUser = await _userManager.FindByIdAsync(storedToken.UserId);
+
+                var finalToken = await GenerateJwtToken(dbUser);
+
+                return finalToken;
+            }
+            catch (Exception ex)
+            {
+                return new TokensResponseDto { Errors = new List<string>{"Server error"}};
+            }
+        }
+
+        private DateTime UnixTimeStampToDateTime(long unixTimeStamp)
+        {
+            var dateTimeVal = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            dateTimeVal = dateTimeVal.AddSeconds(unixTimeStamp).ToUniversalTime();
+            return dateTimeVal;
+        }
+
+
+        private static string GenerateRefreshToken()
+        {
+            byte[] bytes = new byte[64];
+            var randomNumberGenerator = RandomNumberGenerator.Create();
+            randomNumberGenerator.GetBytes(bytes);
+            return Convert.ToBase64String(bytes);
         }
     }
 }

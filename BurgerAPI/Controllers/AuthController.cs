@@ -82,9 +82,21 @@ namespace BurgerAPI.Controllers
                 return BadRequest("Wrong password");
 
             //generate token
-            var jwtToken = _jwtService.GenerateJwtToken(existingUser);
+            var jwtToken =await _jwtService.GenerateJwtToken(existingUser);
 
             return Ok(jwtToken);
+        }
+        [HttpPost("RefreshToken")]
+        public async Task<ActionResult> RefreshToken([FromBody] TokenRequestDto tokenRequest)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest("Invalid parameters");
+
+            var result = await _jwtService.VerifyAndGenerateToken(tokenRequest);
+            if (result == null)
+                return BadRequest("Invalid Tokens");
+
+            return Ok(result);
         }
 
     }
