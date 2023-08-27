@@ -13,14 +13,14 @@ namespace BurgerAPI.Controllers
         private readonly IBurgerAdderService _adderService;
         private readonly IBurgerUpdaterService _updaterService;
         private readonly IBurgerDeleterService _deleterService;
-        private readonly IJwtService _jwtService;
-        public BurgerController(IBurgerGetterService burgerGetterService, IBurgerAdderService adderService, IBurgerUpdaterService updaterService, IBurgerDeleterService deleterService, IJwtService jwtService)
+        private readonly ILogger<BurgerController> _logger;
+        public BurgerController(IBurgerGetterService burgerGetterService, IBurgerAdderService adderService, IBurgerUpdaterService updaterService, IBurgerDeleterService deleterService, ILogger<BurgerController> logger)
         {
             _getterService = burgerGetterService;
             _adderService = adderService;
             _updaterService = updaterService;
             _deleterService = deleterService;
-            _jwtService = jwtService;
+            _logger = logger;
         }
         /// <summary>
         /// Retrieves all Burgers.
@@ -30,9 +30,12 @@ namespace BurgerAPI.Controllers
         [Authorize(Roles ="User")]
         public async Task<ActionResult<List<BurgerResponseDto>>> GetAllBurgers()
         {
-            //logg
+            _logger.LogInformation("Retrieving all burger");
+
             var burgers = await _getterService.GetAllBurgers();
-            //logg
+
+            _logger.LogInformation("All burgers retrieved successfully");
+
             return Ok(burgers);
         }
 
@@ -45,9 +48,12 @@ namespace BurgerAPI.Controllers
         [Authorize(Roles = "User")]
         public async Task<ActionResult<List<BurgerResponseDto>>> GetBurgersByIds([FromQuery] List<int> ids) 
         {
-            //logg
+            _logger.LogInformation("Retrieving all burger based on id");
+
             var burgers = await _getterService.GetBurgersByIds(ids);
-            //logg
+
+            _logger.LogInformation("Burgers retrieved successfully");
+
             return Ok(burgers);
         }
 
@@ -60,15 +66,15 @@ namespace BurgerAPI.Controllers
         [Authorize(Roles = "User")]
         public async Task<ActionResult<BurgerResponseDto>> GetBurgerById(int id)
         {
-            //logg
+            _logger.LogInformation($"Retrieving burger based on id: {id}");
             var burger = await _getterService.GetBurgerById(id);
 
             if (burger == null)
             {
-                //logg
+                _logger.LogInformation("Burger not found");
                 return NotFound();
             }
-            //logg
+            _logger.LogInformation("Burger was found");
             return Ok(burger);
         }
 
@@ -81,9 +87,12 @@ namespace BurgerAPI.Controllers
         [Authorize(Roles ="Admin")]
         public async Task<ActionResult<BurgerResponseDto>> AddBurger(BurgerAddRequestDto BurgerAddRequestDto)
         {
-            //logg
+            _logger.LogInformation("Adding a new burger");
+
             var addedBurger = await _adderService.AddBurger(BurgerAddRequestDto);
-            //logg
+
+            _logger.LogInformation("Burger added successfully");
+
             return CreatedAtAction(nameof(GetBurgerById), new { id = addedBurger.Id }, addedBurger);
         }
 
@@ -96,17 +105,21 @@ namespace BurgerAPI.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> UpdateBurger(BurgerUpdateRequestDto burgerUpdateRequestDto)
         {
-            //logg
+            _logger.LogInformation("Updating burger!");
             var updateBurger = await _updaterService.UpdateBurger(burgerUpdateRequestDto);
 
             if (!updateBurger)
-                return NotFound("Burger doesn't exist");
+            {
+                _logger.LogInformation("Burger not found");
 
+                return NotFound("Burger doesn't exist");
+            }
+            _logger.LogInformation("Found Burger");
             return Ok("Updated Successfully");
         }
 
         /// <summary>
-        /// Deletes a Burger base on the id provided.
+        /// Deletes a Burger based on the id provided.
         /// </summary>
         /// <param name="id">The id of the Burger to be deleted.</param>
         /// <returns></returns>
@@ -114,14 +127,17 @@ namespace BurgerAPI.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult> DeleteBurger(int id)
         {
-            //logg
+            _logger.LogInformation("Deleting burger with given id");
             var isDeleted = await _deleterService.DeleteBurgerById(id);
             
             if (!isDeleted)
-                //loggg
+            {
+                _logger.LogInformation("Burger not found");
                 return NotFound("Not found");
+            }
             
-            //logg
+            _logger.LogInformation("Burger deleted successfully");
+
             return Ok("Deleted Successfully");
         
         }

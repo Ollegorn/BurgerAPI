@@ -1,4 +1,5 @@
-﻿using RepositoryContracts;
+﻿using Microsoft.Extensions.Logging;
+using RepositoryContracts;
 using ServiceContracts.BurgerDto;
 using ServiceContracts.Interfaces;
 
@@ -8,25 +9,33 @@ namespace Services
     public class BurgerUpdaterService :IBurgerUpdaterService
     {
         private readonly IBurgerRepository _repository;
-        public BurgerUpdaterService(IBurgerRepository BurgerRepository)
+        private readonly ILogger<BurgerUpdaterService> _logger;
+        public BurgerUpdaterService(IBurgerRepository BurgerRepository,ILogger<BurgerUpdaterService> logger)
         {
             _repository = BurgerRepository;
+            _logger = logger;
         }
 
         public async Task<bool> UpdateBurger(BurgerUpdateRequestDto burgerUpdateRequestDto)
         {
-            //logg
+            _logger.LogInformation("Updating burger");
+
             burgerUpdateRequestDto.FixIngredientString(burgerUpdateRequestDto);
-            //logg
+            _logger.LogInformation("Fixed ingredient string");
+
             var burger = burgerUpdateRequestDto.ToBurger();
 
             var updatedBurger =await _repository.UpdateBurger(burger);
 
-            if(updatedBurger)
-            //logg
-                return true;
+            if (!updatedBurger)
+            {
+                _logger.LogInformation("Burger doesnt exist");
 
-            return false;
+                return false;
+            }
+            _logger.LogInformation("Burger updated successfully");
+
+            return true;
 
 
         }
