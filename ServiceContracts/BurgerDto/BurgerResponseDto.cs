@@ -24,6 +24,31 @@ namespace ServiceContracts.BurgerDto
                 Ingredients = Ingredients
             };
         }
+
+
+        /// <summary>
+        /// Compares the current object data with the parameter object
+        /// </summary>
+        /// <param name="obj">The BurgerResponseDto Object to compare</param>
+        /// <returns>True or false, indicating whether all burger details are matched with the specified parameter object</returns>
+        public override bool Equals(object obj)
+        {
+            if (obj is null || GetType() != obj.GetType())
+                return false;
+
+            BurgerResponseDto other = (BurgerResponseDto)obj;
+            return Id == other.Id &&
+                   Ingredients == other.Ingredients &&
+                   Name == other.Name &&
+                   Price == other.Price;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+
     }
 
     /// <summary>

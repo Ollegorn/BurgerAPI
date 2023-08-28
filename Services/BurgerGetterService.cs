@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Entities;
+using Microsoft.Extensions.Logging;
 using RepositoryContracts;
 using ServiceContracts.BurgerDto;
 using ServiceContracts.Interfaces;
@@ -15,40 +16,78 @@ namespace Services
             _logger = logger;
         }
 
-        public async Task<List<BurgerResponseDto>> GetAllBurgers()
+        public virtual async Task<List<BurgerResponseDto>> GetAllBurgers()
         {
             _logger.LogInformation("Getting all burgers");
+            try
+            {
+                var burgers = await _repository.GetAllBurgers();
+                var burgersResponse = burgers.ToBurgerResponseDtoList();
 
-            var burgers = await _repository.GetAllBurgers();
-            var burgersResponse = burgers.ToBurgerResponseDtoList();
+                _logger.LogInformation("Burgers retrieved successfully");
 
-            _logger.LogInformation("Burgers retrieved successfully");
-
-            return burgersResponse;
+                return burgersResponse;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error while getting burgers {ex.Message}");
+                return null;
+            }
         }
 
-        public async Task<BurgerResponseDto> GetBurgerById(int id)
+        public virtual async Task<BurgerResponseDto?> GetBurgerById(int? id)
         {
             _logger.LogInformation("Getting burger with given id");
+            if (id == null)
+            {
+                _logger.LogInformation("Id was null");
+                return null;
+            }
+            try
+            {
 
-            var burger = await _repository.GetBurgerById(id);
-            var burgerResponse = burger?.ToBurgerResponseDto();
+                Burger? burger = await _repository.GetBurgerById(id.Value);
+                if (burger == null)
+                {
+                    _logger.LogInformation("Burger doesn't exist");
+                    return null;
+                }
 
-            _logger.LogInformation("Retrieved successfully");
+                var burgerResponse = burger.ToBurgerResponseDto();
 
-            return burgerResponse;
+                _logger.LogInformation("Retrieved successfully");
+
+                return burgerResponse;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error while getting burger with id : {id}, {ex.Message}");
+                return null;
+            }
         }
 
-        public async Task<List<BurgerResponseDto>> GetBurgersByIds(List<int> ids)
+        public virtual async Task<List<BurgerResponseDto>?> GetBurgersByIds(List<int>? ids)
         {
             _logger.LogInformation("Getting all burgers with given ids");
+            try
+            {
+                if (ids == null)
+                {
+                    _logger.LogInformation("Ids were null");
+                    return null;
+                }
+                var burgers = await _repository.GetBurgersByIds(ids);
+                var burgersResponse = burgers.ToBurgerResponseDtoList();
 
-            var burgers = await _repository.GetBurgersByIds(ids);
-            var burgersResponse = burgers.ToBurgerResponseDtoList();
+                _logger.LogInformation("Retrieved all burgers with given ids successfully");
 
-            _logger.LogInformation("Retrieved all burgers with given ids successfully");
-
-            return burgersResponse;
+                return burgersResponse;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error while getting burgers with ids, {ex.Message}");
+                return null;
+            }
         }
     }
 }
