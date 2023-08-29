@@ -9,28 +9,41 @@ namespace Services
     public class BurgerAdderService : IBurgerAdderService
     {
         private readonly IBurgerRepository _BurgerRepository;
-        private readonly ILogger<BurgerAdderService> _logger;
-        public BurgerAdderService(IBurgerRepository BurgerRepository,ILogger<BurgerAdderService> logger)
+        private readonly ILogger<BurgerGetterService> _logger;
+        public BurgerAdderService(IBurgerRepository BurgerRepository,ILogger<BurgerGetterService> logger)
         {
             _BurgerRepository = BurgerRepository;
             _logger = logger;
         }
 
-        public async Task<BurgerResponseDto> AddBurger(BurgerAddRequestDto BurgerAddRequestDto)
+        public async Task<BurgerResponseDto> AddBurger(BurgerAddRequestDto burgerAddRequestDto)
         {
             _logger.LogInformation("Adding a new burger");
+            try
+            {
 
-            BurgerAddRequestDto.FixIngredientString(BurgerAddRequestDto);
-            var Burger = BurgerAddRequestDto.ToBurger();
-            
-            _logger.LogInformation("Fixxed ingredient string");
+                if (burgerAddRequestDto == null)
+                {
+                    throw new ArgumentNullException(nameof(burgerAddRequestDto));
+                }
 
-            var addedBurger = await _BurgerRepository.AddBurger(Burger);
-            var addedBurgerResponse = addedBurger.ToBurgerResponseDto();
+                burgerAddRequestDto.FixIngredientString(burgerAddRequestDto);
+                var Burger = burgerAddRequestDto.ToBurger();
 
-            _logger.LogInformation("Burger added successfully");
+                _logger.LogInformation("Fixxed ingredient string");
 
-            return addedBurgerResponse;
+                var addedBurger = await _BurgerRepository.AddBurger(Burger);
+                var addedBurgerResponse = addedBurger.ToBurgerResponseDto();
+
+                _logger.LogInformation("Burger added successfully");
+
+                return addedBurgerResponse;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error while adding burger, {ex.Message}");
+                throw;
+            }
 
         }
     }

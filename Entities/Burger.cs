@@ -4,8 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Entities
 {
     public class Burger
-    { 
-
+    {
+        [Required]
         public int Id { get; set; }
 
         
@@ -16,6 +16,7 @@ namespace Entities
 
         [Range(0, double.MaxValue, ErrorMessage = "The Price field must be a positive number.")]
         [Column(TypeName = "decimal")]
+        [Required]
         public int Price { get; set; }
 
 
