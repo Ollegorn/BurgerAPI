@@ -36,6 +36,7 @@ namespace Tests.ServiceTests
 
             _getterService = new BurgerGetterService(_repository, loggerMock.Object);
             _adderService = new BurgerAdderService(_repository, loggerMock.Object);
+            _updaterService = new BurgerUpdaterService(_repository, loggerMock.Object);
 
         }
 
@@ -261,20 +262,66 @@ namespace Tests.ServiceTests
         }
 
         [Fact]
-        public async Task AddBurger_ThrowsException_ReturnsNull()
+        public async Task AddBurger_ThrowsException_ReturnsExceptionWithMessage()
         {
-            // Arrange
+            //Arrange
             BurgerAddRequestDto burgerRequest = _fixture.Build<BurgerAddRequestDto>().With(burg => burg.BurgerPrice, 10).Create();
 
             _repositoryMock.Setup(repository => repository.AddBurger(It.IsAny<Burger>())).ThrowsAsync(new Exception("Test"));
 
-            // Act & Assert
+            //Act & Assert
             Func<Task> addBurgerAction = async () => await _adderService.AddBurger(burgerRequest);
             await addBurgerAction.Should().ThrowAsync<Exception>().WithMessage("Test");
         }
 
 
+        #endregion
 
+        #region UpdateBurger
+        [Fact]
+        public async Task UpdateBurger_NullRequest_ToThrowArgumentNullException()
+        {
+            //Arrange
+            //BurgerUpdateRequestDto burgerUpdateRequest = _fixture.Build<BurgerUpdateRequestDto>().With(burg => burg.BurgerId, 2).Create();
+            BurgerUpdateRequestDto nullRequest = null;
+
+            //Act & Assert
+            Func<Task> updateBurgerAction = async () => await _updaterService.UpdateBurger(nullRequest);
+            await updateBurgerAction.Should().ThrowAsync<ArgumentNullException>();
+        }
+
+        [Fact]
+        public async Task UpdateBurger_NonExistentBurger_ToReturnFalse()
+        {
+            //Arrange
+            BurgerUpdateRequestDto validRequest = _fixture.Build<BurgerUpdateRequestDto>().With(burg => burg.BurgerPrice, 8).Create();
+
+            _repositoryMock.Setup(repository => repository.UpdateBurger(It.IsAny<Burger>())).ReturnsAsync(false);
+
+            //Act
+            var result = await _updaterService.UpdateBurger(validRequest);
+
+            //Assert
+            result.Should().BeFalse();
+        }
+
+
+        [Fact]
+        public async Task UpdateBurger_ValidBurger_ToReturnTrue()
+        {
+            // Arrange
+            BurgerUpdateRequestDto validRequest = _fixture.Build<BurgerUpdateRequestDto>().With(burg => burg.BurgerPrice, 8).Create();
+
+
+            _repositoryMock.Setup(repository => repository.UpdateBurger(It.IsAny<Burger>()))
+                           .ReturnsAsync(true);
+
+            // Act
+            var result = await _updaterService.UpdateBurger(validRequest);
+
+            // Assert
+            result.Should().BeTrue();
+        }
 
 
 

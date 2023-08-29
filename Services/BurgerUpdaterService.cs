@@ -9,8 +9,8 @@ namespace Services
     public class BurgerUpdaterService :IBurgerUpdaterService
     {
         private readonly IBurgerRepository _repository;
-        private readonly ILogger<BurgerUpdaterService> _logger;
-        public BurgerUpdaterService(IBurgerRepository BurgerRepository,ILogger<BurgerUpdaterService> logger)
+        private readonly ILogger<BurgerGetterService> _logger;
+        public BurgerUpdaterService(IBurgerRepository BurgerRepository,ILogger<BurgerGetterService> logger)
         {
             _repository = BurgerRepository;
             _logger = logger;
@@ -19,6 +19,11 @@ namespace Services
         public async Task<bool> UpdateBurger(BurgerUpdateRequestDto burgerUpdateRequestDto)
         {
             _logger.LogInformation("Updating burger");
+            if (burgerUpdateRequestDto == null )
+            {
+                _logger.LogInformation("Burger was null");
+                throw new ArgumentNullException(nameof(burgerUpdateRequestDto));
+            }
 
             burgerUpdateRequestDto.FixIngredientString(burgerUpdateRequestDto);
             _logger.LogInformation("Fixed ingredient string");
